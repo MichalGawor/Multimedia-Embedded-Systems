@@ -1,0 +1,5 @@
+# Multimedia-Embedded-Systems
+
+PROJECT LICENSED WITH NOT-BEING A DICK LICENSE
+
+IRISH CASING(C)
