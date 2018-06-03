@@ -6,13 +6,14 @@ import time
 
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(36, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(38, GPIO.OUT, initial=GPIO.LOW)
-GPIO.setup(40, GPIO.OUT, initial=GPIO.LOW)
 
 PUMP_PIN = 40
-COOLER_PIN = 38
-LIGHT_PIN = 36
+COOLER_PIN = 36
+LIGHT_PIN = 32
+
+GPIO.setup(PUMP_PIN, GPIO.OUT, initial=GPIO.HIGH)
+GPIO.setup(COOLER_PIN, GPIO.OUT, initial=GPIO.HIGH)
+GPIO.setup(LIGHT_PIN, GPIO.OUT, initial=GPIO.HIGH)
 
 DB_NAME = "test"
 USER = "pi"
@@ -31,6 +32,7 @@ class BerryGreenery():
         self.db_connection, self.db_cursor = self.db_connect(dbname, user, host, password)
         self.db_get_and_set_expected()
         self.read_values()
+        GPIO.output(LIGHT_PIN, 0)
 
     def db_connect(self, dbname, user, host, password):
         try:
@@ -79,26 +81,26 @@ class BerryGreenery():
     
     def controller(self):
         while True:
+            self.db_get_and_set_expected()
             self.read_values()
             if self.desired_moisture - self.moisture >= 10:
                 self.pump_water()
             if self.temperature - self.desired_temperature >= 2:
                 self.cool_air_on()
-            if self.desired_temperature - self.temperature >= 2:
+            if self.desired_temperature == self.temperature:
                 self.cool_air_off()
             self.day_night_cycle()
     
     def pump_water(self):
-        GPIO.output(PUMP_PIN, 1)
-        print
-        time.sleep(2)
         GPIO.output(PUMP_PIN, 0)
+        time.sleep(2)
+        GPIO.output(PUMP_PIN, 1)
         
     def cool_air_on(self):
-        GPIO.output(COOLER_PIN, 1)
+        GPIO.output(COOLER_PIN, 0)
     
     def cool_air_off(self):
-        GPIO.output(COOLER_PIN, 0)
+        GPIO.output(COOLER_PIN, 1)
         
     def day_night_cycle(self):
         if self.day and time.time() - self.cycle_start_time > self.day_time:
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     serialConnection = serial.Serial("/dev/ttyACM0", 9600)
     serialConnection.baudrate = 9600
     try:
-ebe ebe        app_instance = BerryGreenery(DB_NAME, USER, HOST, PASSWORD)
+        app_instance = BerryGreenery(DB_NAME, USER, HOST, PASSWORD)
         app_instance.controller()
 
     except KeyboardInterrupt:

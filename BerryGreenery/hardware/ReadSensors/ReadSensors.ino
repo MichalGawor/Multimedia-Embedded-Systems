@@ -3,8 +3,8 @@
 #include <Adafruit_Sensor.h>
 
 #define DHT_PIN 3
-#define MOISTURE_SENSOR_PIN A0
-#define WATER_LEVEL_SENSOR_PIN A2
+#define MOISTURE_SENSOR_PIN A1
+#define WATER_LEVEL_SENSOR_PIN A0
 #define DHT_TYPE DHT11
 
 
@@ -51,9 +51,7 @@ void loop() {
 
   // Compute numerical value
   // readTest();
-  readSensors(2, 500);
-  delay(1000);
-  
+  readSensors(6, 5000);
 }
 
 
