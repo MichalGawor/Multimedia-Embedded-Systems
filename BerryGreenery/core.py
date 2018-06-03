@@ -31,8 +31,6 @@ class BerryGreenery():
         self.db_connection, self.db_cursor = self.db_connect(dbname, user, host, password)
         self.db_get_and_set_expected()
         self.read_values()
-        
-
 
     def db_connect(self, dbname, user, host, password):
         try:
@@ -45,7 +43,7 @@ class BerryGreenery():
             print(error)
 
     def db_insert_measurments(self, moisture, water_level, temperature):
-        sql_querry = """INSERT INTO real_table(moisture, "water", temperature)
+        sql_querry = """INSERT INTO real_table(moisture, water_level, temperature)
                         VALUES(%s, %s, %s)"""   
         self.db_cursor.execute(sql_querry, (moisture, water_level, temperature))
         self.db_connection.commit()
@@ -55,11 +53,15 @@ class BerryGreenery():
         sql_querry = """SELECT * FROM expected_table ORDER by id DESC LIMIT 1;"""
         self.db_cursor.execute(sql_querry)
         records = self.db_cursor.fetchall()
-        records = records[0]
-        self.day_time = 3600 * records[1]
-        self.night_time = 3600 * records[2]
-        self.desired_moisture = records[3]
-        self.desired_temperature = records[4]
+        try:
+            records = records[0]
+            self.day_time = 3600 * records[1]
+            self.night_time = 3600 * records[2]
+            self.desired_moisture = records[3]
+            self.desired_temperature = records[4]
+        except Exception as empty_table:
+            print("expected_table is empty")
+            print(empty_table)
         
         
     def read_values(self):
@@ -88,6 +90,7 @@ class BerryGreenery():
     
     def pump_water(self):
         GPIO.output(PUMP_PIN, 1)
+        print
         time.sleep(2)
         GPIO.output(PUMP_PIN, 0)
         
@@ -109,11 +112,11 @@ class BerryGreenery():
             
 
 if __name__ == "__main__":
-    # serial connection do arduino
+    # serial connection to arduino
     serialConnection = serial.Serial("/dev/ttyACM0", 9600)
     serialConnection.baudrate = 9600
     try:
-        app_instance = BerryGreenery(DB_NAME, USER, HOST, PASSWORD)
+ebe ebe        app_instance = BerryGreenery(DB_NAME, USER, HOST, PASSWORD)
         app_instance.controller()
 
     except KeyboardInterrupt:
