@@ -22,14 +22,16 @@ PASSWORD = "qwerty"
 
 class BerryGreenery():
     def __init__(self, dbname, user, host, password):
+        self.day_time = 3600
+        self.night_time = 3600
         self.desired_moisture = 30
         self.desired_temperature = 25
-        self.day_time = 20
-        self.night_time = 10      
         self.cycle_start_time = time.time()
         self.day = True
         self.db_connection, self.db_cursor = self.db_connect(dbname, user, host, password)
+        self.db_get_and_set_expected()
         self.read_values()
+        
 
 
     def db_connect(self, dbname, user, host, password):
@@ -43,12 +45,22 @@ class BerryGreenery():
             print(error)
 
     def db_insert_measurments(self, moisture, water_level, temperature):
-        timestamp = datetime.datetime.utcnow()
-        sql_querry = """INSERT INTO measurements(date, moisture, "water level", temperature)
-                        VALUES(%s, %s, %s, %s)"""   
-        self.db_cursor.execute(sql_querry, (timestamp, moisture, water_level, temperature))
+        sql_querry = """INSERT INTO real_table(moisture, "water", temperature)
+                        VALUES(%s, %s, %s)"""   
+        self.db_cursor.execute(sql_querry, (moisture, water_level, temperature))
         self.db_connection.commit()
         print("Inserted data")
+
+    def db_get_and_set_expected(self):
+        sql_querry = """SELECT * FROM expected_table ORDER by id DESC LIMIT 1;"""
+        self.db_cursor.execute(sql_querry)
+        records = self.db_cursor.fetchall()
+        records = records[0]
+        self.day_time = 3600 * records[1]
+        self.night_time = 3600 * records[2]
+        self.desired_moisture = records[3]
+        self.desired_temperature = records[4]
+        
         
     def read_values(self):
         uno_message = int(serialConnection.readline())

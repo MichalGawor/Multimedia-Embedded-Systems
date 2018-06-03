@@ -21,7 +21,7 @@ const (
 
 var db *sql.DB
 
-//Environment - data to be filled into tables
+//Environment data to be filled into tables
 type Environment struct {
 	ID          int `json:"id"`
 	Moisture    int `json:"moisture"`
@@ -51,7 +51,7 @@ func main() {
 	http.HandleFunc("/getExpected", getExpected)
 	http.HandleFunc("/insertReal", insertReal)
 	http.HandleFunc("/getReal", getReal)
-	http.ListenAndServe(":8090", nil)
+	http.ListenAndServe(":8091", nil)
 }
 
 func insertExpected(w http.ResponseWriter, r *http.Request) {
@@ -75,11 +75,12 @@ func insertExpected(w http.ResponseWriter, r *http.Request) {
 }
 
 func insert(environment Environment) {
-	sqlStatement := `INSERT INTO expected_table(moisture, day-time, night-time, temperature) VALUES($1, $2, $3, $4)`
+	sqlStatement := `INSERT INTO expected_table(moisture, day_time, night_time, temperature) VALUES($1, $2, $3, $4)`
 	_, err := db.Exec(sqlStatement, environment.Moisture, environment.DayTime, environment.NightTime, environment.Temperature)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("INSERT")
 }
 
 func getExpected(w http.ResponseWriter, r *http.Request) {
@@ -174,12 +175,12 @@ func initialization() {
 	var err error
 	db, err = sql.Open("postgres", psqlInfo)
 
-	result, err := db.Exec("CREATE TABLE IF NOT EXISTS real_table (id BIGSERIAL PRIMARY KEY, lighting INT, moisture INT, water INT, temperature INT);")
+	result, err := db.Exec("CREATE TABLE IF NOT EXISTS real_table (id SERIAL PRIMARY KEY, moisture INT, water INT, temperature INT);")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	result, err = db.Exec("CREATE TABLE IF NOT EXISTS expected_table (id BIGSERIAL PRIMARY KEY, lighting INT, moisture INT, water INT, temperature INT);")
+	result, err = db.Exec("CREATE TABLE IF NOT EXISTS expected_table (id SERIAL PRIMARY KEY, day_time REAL, night_time REAL, moisture INT, temperature INT);")
 	if err != nil {
 		log.Fatal(err)
 	}
